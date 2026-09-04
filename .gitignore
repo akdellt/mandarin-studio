@@ -1,0 +1,21 @@
+.venv/
+venv/
+ENV/
+docs/
+
+# VOSK
+model/
+*.tar.gz
+*.zip
+
+*.wav
+
+# cache
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# arquivos de sistema
+.DS_Store
+Thumbs.db
+
