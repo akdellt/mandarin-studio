@@ -4,7 +4,7 @@ ENV/
 docs/
 
 # VOSK
-model/
+data/
 *.tar.gz
 *.zip
 
@@ -12,6 +12,8 @@ model/
 
 # cache
 __pycache__/
+*.pyc
+*.egg-info/
 *.py[cod]
 .ipynb_checkpoints/
 

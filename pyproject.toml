@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mandarinstudio"
+version = "0.1.0"
+description = "MVP de avaliador de tons de mandarim"
+requires-python = ">=3.10"
+dependencies = [
+    "sounddevice",
+    "scipy",
+    "praat-parselmouth",
+    "fastdtw",
+    "matplotlib",
+    "vosk",
+    "gTTS",
+    "pypinyin",
+    "numpy",
+]
+
+[tool.setuptools.packages.find]
+include = ["mandarinstudio*"]
