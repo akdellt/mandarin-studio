@@ -8,16 +8,14 @@ data/
 *.tar.gz
 *.zip
 
-*.wav
-
 # cache
 __pycache__/
 *.pyc
 *.egg-info/
 *.py[cod]
 .ipynb_checkpoints/
+.pytest_cache
 
 # arquivos de sistema
 .DS_Store
 Thumbs.db
-

@@ -1,10 +1,11 @@
 import logging
-import numpy as np
+
 from pathlib import Path
 from enum import Enum
-from typing import NamedTuple
+
 from mandarinstudio.analysis import recognition
 from mandarinstudio.comparison.dtw import run_dtw
+from mandarinstudio.flashcards.models import Flashcard
 
 logger = logging.getLogger(__name__)
 
@@ -14,35 +15,49 @@ class CategoryOptions(Enum):
     MODERATE = "moderate"
     INCORRECT = "incorrect"
 
-class ComparisonMetrics(NamedTuple):
-    avg_distance: float
-    is_correct: bool
-    spoken_pinyin: str
-    hanzi: str
-
-class PronunciationResult(NamedTuple):
-    category: CategoryOptions
-    similarity: float
-    spoken_pinyin: str
-    hanzi: str
-
+# Empirical threshold: average Z-normalized DTW distance above which tone shape is considered wrong
 MAX_ACCEPTABLE_DISTANCE = 0.8
 
 
-def compare_audio(ref_audio: Path, user_audio: Path, target_pinyin: str) -> ComparisonMetrics:
+def compare_audio(
+    ref_audio: Path,
+    user_audio: Path,
+    target_hanzi: str,
+    grammar: list[str] | None = None,
+) -> tuple[float | None, bool]:
+    is_correct = recognition.check_spoken_pinyin(user_audio, target_hanzi, grammar)
+
+    # Skips pitch analysis if the basic phoneme was mispronounced
+    if not is_correct:
+        return None, False
+
     dtw_result  = run_dtw(ref_audio, user_audio)
-    avg_distance = np.inf if not dtw_result.path else dtw_result.distance / len(dtw_result.path)
-
-    logger.debug(f"Distância Média por Frame: {avg_distance:.4f}")
-
-    is_correct, spoken_pinyin, hanzi = recognition.check_spoken_pinyin(user_audio, target_pinyin)
-    return ComparisonMetrics(avg_distance, is_correct, spoken_pinyin, hanzi)
+    return dtw_result.avg_distance, True
 
 
-def evaluate_pronunciation(ref_audio: Path, user_audio: Path, target_pinyin: str) -> PronunciationResult:
-    metrics = compare_audio(ref_audio, user_audio, target_pinyin)
-    similarity = max(0.0, 100 - ((metrics.avg_distance * 100) / MAX_ACCEPTABLE_DISTANCE))
+def evaluate_pronunciation(flashcard: Flashcard, user_audio: Path) -> tuple[CategoryOptions, float]:
+    if not isinstance(flashcard.hanzi, str) or not flashcard.hanzi.strip():
+        raise ValueError("The flashcard's hanzi cannot be empty or invalid.")
+    target_hanzi = flashcard.hanzi.strip()
 
+    ref_audio = flashcard.reference_audio_path
+    user_audio = Path(user_audio)
+
+    if not ref_audio.is_file():
+        raise FileNotFoundError(f"Reference audio not found or invalid: {ref_audio}")
+    if not user_audio.is_file():
+        raise FileNotFoundError(f"User recording not found or invalid: {user_audio}")
+
+    grammar = flashcard.grammar
+    avg_distance, is_correct = compare_audio(ref_audio, user_audio, target_hanzi, grammar)
+    
+    if not is_correct or avg_distance is None:
+        return CategoryOptions.INCORRECT, 0.0
+    
+    # Maps DTW distance [0, MAX_ACCEPTABLE_DISTANCE] into a [100%, 0%] score
+    similarity = max(0.0, 100 - ((avg_distance * 100) / MAX_ACCEPTABLE_DISTANCE))
+    similarity = round(float(similarity), 2)
+            
     if similarity >= 90:
         category  = CategoryOptions.PERFECT
     elif similarity >= 70:
@@ -52,6 +67,4 @@ def evaluate_pronunciation(ref_audio: Path, user_audio: Path, target_pinyin: str
     else:
         category  = CategoryOptions.INCORRECT
 
-    if not metrics.is_correct and category == CategoryOptions.PERFECT:
-        category = CategoryOptions.EXCELLENT
-    return PronunciationResult(category, similarity, metrics.spoken_pinyin, metrics.hanzi)
+    return category, similarity

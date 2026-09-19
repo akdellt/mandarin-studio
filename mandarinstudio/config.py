@@ -6,10 +6,15 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
-CURRENT_FILE = Path(__file__).resolve()
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
-ROOT_PROJECT = CURRENT_FILE.parent.parent
+DATA_DIR = ROOT_DIR / "data"
 
-DATA_FOLDER = ROOT_PROJECT / "data"
-AUDIO_FOLDER = DATA_FOLDER / "audio_mock"
-VOSK_MODEL = DATA_FOLDER / "model" / "vosk-model-cn-0.22"
+FLASHCARDS_DIR = DATA_DIR / "flashcards"
+AUDIO_DIR = DATA_DIR / "audio"
+AUDIO_REF_DIR = AUDIO_DIR / "references"
+AUDIO_USER_DIR = AUDIO_DIR / "recordings"
+VOSK_MODEL = DATA_DIR / "model" / "vosk-model-cn-0.22"
+
+for folder in [FLASHCARDS_DIR, AUDIO_REF_DIR, AUDIO_USER_DIR]:
+    folder.mkdir(parents=True, exist_ok=True)

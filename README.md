@@ -42,12 +42,14 @@ Baixe um modelo do Vosk em chinês em [alphacephei.com/vosk/models](https://alph
 
 ```
 mandarinstudio/
-├── audio/          # captura de microfone e geração de áudio de referência
 ├── analysis/       # extração de pitch e reconhecimento de fala
-├── comparison/     # cálculo de DTW e avaliação do resultado
+├── audio/          # captura de microfone e geração de áudio de referência
+├── comparison/     # cálc'ulo de DTW e avaliação do resultado
+├── flashcards/     # manipulação de flashcards
 ├── visualization/  # geração de gráficos
 └── config.py
-notebooks/          # testes e exploração
+notebooks/          # testes e exploração no Jupyter
+tests/              # testes unitários
 data/               # áudios gerados (não versionado)
 ```
 
@@ -60,22 +62,42 @@ data/               # áudios gerados (não versionado)
 - [x] Exibição gráfica da curva de tom
 - [x] Percentual de similaridade com o áudio de referência
 - [x] Código organizado em módulos Python
+- [x] Estruturação dos flashcards
+- [ ] Interface gráfica (Tkinter)
 
 ## Regras de negócio implementadas
 
 - Similaridade por distância DTW: ≥90% Perfeito · 89–70% Excelente · 69–50% Razoável · <50% Incorreto
-- Fonema incorreto nunca é classificado como "Perfeito", mesmo com tom correspondente
+- A comparação de tom só é realizada se a sílaba falada corresponder à esperada; caso contrário, o resultado é automaticamente Incorreto
+- Flashcards não têm restrição de caractere único, já que um mesmo hanzi pode ter pronúncias e significados diferentes (ex: 还, "hái" ou "huán")
 
 ## Em aberto / próximos passos
 
-- [ ] Comparação só deve ser permitida entre a mesma sílaba/fonema
-- [ ] Normalização entre timbres diferentes (vozes graves/agudas)
 - [ ] Melhorar detecção de silêncio para sílabas curtas ou faladas baixo (ex: falha detectada em "是")
-- [ ] Tratamento de erros por função
-- [ ] Testes automatizados
-- [ ] Interface gráfica (Tkinter)
+- [ ] Reconhecimento de fala (Vosk) retorna vazio em alguns monossílabos, mesmo com gramática restrita — investigar se está relacionado ao corte de silêncio acima
 
 ## Diário de bordo
+
+<details>
+<summary>16/09/2026 — 18/09/2026</summary>
+
+- Alterado `check_spoken_pinyin` para comparar sílabas por pinyin sem tom
+- Adicionado parâmetro `grammar` em `check_spoken_pinyin` para restringir candidatos de fonema em sílabas isoladas
+- Removidos `spoken_pinyin` e `hanzi` do retorno de `check_spoken_pinyin`
+- Restringido `evaluation.py` para não comparar tons quando a sílaba falada não corresponde à esperada
+- Removida a condição que permitia categoria de similaridade mesmo com sílaba incorreta
+- Refatoradas as funções afetadas pelos parâmetros de retorno removidos
+- Movido o cálculo de `avg_distance` para dentro de `run_dtw`
+- Corrigida a conversão de MP3 (gTTS) para WAV
+- Melhorado o tratamento de ruído do 1º tom e limpeza de bordas em `pitch.py`
+- Definida a estrutura `Flashcard` e suas funções CRUD
+- Padronizados os eixos em `graphs.py` para melhor apresentação do gráfico
+- Adicionado tratamento inicial de erros nas funções principais
+- Corrigidos os caminhos globais em `config.py`
+- Gravadas fixtures de áudio para os testes
+- Adicionados testes automatizados iniciais para `analysis`, `comparison` e `flashcards`
+
+</details>
 
 <details>
 <summary>13/09/2026</summary>
