@@ -1,21 +1,28 @@
+# ambientes virtuais
 .venv/
 venv/
+env/
 ENV/
-docs/
 
-# VOSK
+# dados locais (áudios, flashcards, modelo Vosk)
 data/
 *.tar.gz
 *.zip
 
-# cache
-__pycache__/
-*.pyc
-*.egg-info/
-*.py[cod]
-.ipynb_checkpoints/
-.pytest_cache
+# documentação privada
+docs/
+.github/copilot-instructions.md
 
-# arquivos de sistema
+# cache e build
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# editor e sistema
+.vscode/
 .DS_Store
 Thumbs.db
